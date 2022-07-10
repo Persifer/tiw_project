@@ -53,34 +53,29 @@ public class ExecutionHandler extends HttpServlet {
 				
 		
 		if (tempCheckIdSubfolder.isPresent()) {
-			// è presente un id
-				
-			if (idSubFolder == tempCheckIdSubfolder.get()) {
-				// la sottocartella appartiene all'utente e posso spostare il file
-				
-				Optional<Integer> docNameAlredyInSubfolder = this.documentoDao.docNameAlredyInSubfolder(idDocToMove, idSubFolder);
-				
-				if (docNameAlredyInSubfolder.isPresent()) {
-					// non esiste un file che ha stesso nome nella stessa sottocartella. procedo
-					Optional<Documento> tempDoc = this.documentoDao.moveDocument(idDocToMove, idSubFolder);
-					if (tempDoc.isPresent()) {
-						request.getSession().setAttribute("erroreMovement", "");
-						request.getRequestDispatcher("Home").forward(request, response);
-					} else {
-						// errore interno al server
-						response.sendError(404);
-					} 
-					
+			// la sottocartella appartiene all'utente e posso spostare il file
+			
+			// Controllo che il documento selezionato non abbia un nome di un documento già presente
+			Optional<Integer> docNameAlredyInSubfolder = this.documentoDao.docNameAlredyInSubfolder(idDocToMove, idSubFolder);
+			
+			if (docNameAlredyInSubfolder.isPresent()) {
+				// non esiste un file che ha stesso nome nella stessa sottocartella. procedo
+				Optional<Documento> tempDoc = this.documentoDao.moveDocument(idDocToMove, idSubFolder);
+				if (tempDoc.isPresent()) {
+					request.getSession().setAttribute("erroreMovement", "");
+					request.getRequestDispatcher("Home").forward(request, response);
 				} else {
-					// esiste un documento che ha lo stesso nome di quello che sto provando a spostare nella stessa sottocartella
-					request.getSession().setAttribute("erroreMovement", "Il documento che stai provando a spostare esiste gi&agrave; nella cartella di"
-							+ " destinazione. Cambiare nome o cartella di destinazione");
-					request.getRequestDispatcher(UtilityConstans.PRIVATEPATH + "sottocartella.jsp").forward(request, response);
-				}
+					// errore interno al server
+					response.sendError(404);
+				} 
+				
 			} else {
-				// tempCheckIdDoc e/o tempCheckIdSubfolder sono errrati, accesso non consentito
-				response.sendError(403);
+				// esiste un documento che ha lo stesso nome di quello che sto provando a spostare nella stessa sottocartella
+				request.getSession().setAttribute("erroreMovement", "Il documento che stai provando a spostare esiste gi&agrave; nella cartella di"
+						+ " destinazione. Cambiare nome o cartella di destinazione");
+				request.getRequestDispatcher(UtilityConstans.PRIVATEPATH + "sottocartella.jsp").forward(request, response);
 			}
+
 				
 			
 		} else {

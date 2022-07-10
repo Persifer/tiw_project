@@ -29,8 +29,7 @@ public class DocumentoDAO {
         
     }
     
-       	
-    	
+    // prende la lista dei documenti di una sottocartella associata ad un utente   	
 	public List<Documento> getListaDocumentiByUserAndSubfolder(Sottocartella subfolder, Integer idUtente){
     	
     	String query = "SELECT d.idDocumento, d.nome, d.data_creazione, d.sommario, d.idUtenteProprietario, d.idSottocartella\r\n"
@@ -69,6 +68,7 @@ public class DocumentoDAO {
     	}
     }
 	
+	// prende i dati di un documento tramite id
 	public Optional<Documento> getDocumentById(Integer idDoc){
 	    	
 	    	String query = "SELECT * FROM Documento WHERE idDocumento = ?;";
@@ -105,6 +105,7 @@ public class DocumentoDAO {
 			return Optional.empty();
 	}
 	
+	// prende i dati di un documento associato ad un utente
 	public Optional<Documento> getDocumentByIdAndUser(Integer idDoc, Integer idUtente){
     	
     	String query = "SELECT * FROM Documento WHERE idDocumento = ? AND idUtenteProprietario = ?;";
@@ -141,6 +142,7 @@ public class DocumentoDAO {
 		return Optional.empty();
     }
 	
+	// crea un nuovo documento
 	public Optional<Documento> createNewDocument(String nomeDocumento, String sommario, Utente user, Integer idSottocartella){
     	
     	String query = "INSERT INTO Documento(nome, data_creazione, sommario, idUtenteProprietario, idSottocartella) \r\n"
@@ -181,6 +183,7 @@ public class DocumentoDAO {
     	
     }
 	
+	// sposta il documento
 	public Optional<Documento> moveDocument(Integer idDocumento, Integer idSottocartella){
     	
     	String query = "UPDATE Documento SET idSottocartella = ? WHERE idDocumento = ?; ";
@@ -210,6 +213,7 @@ public class DocumentoDAO {
     	
     }
 	
+	// restituisce un intero se il documento appartiene all'utente selezionato
 	public Optional<Integer> checkIfDocumentIsOfTheUser(Integer idDocumento, Integer idUtente){
 		
 		String query = "SELECT idDocumento FROM Documento WHERE idUtenteProprietario = ? AND idDocumento = ?;";
@@ -237,6 +241,7 @@ public class DocumentoDAO {
 		
 	}
 	
+	// controlla che quel documento non esista già
 	public Optional<Integer> checkDocumentNameExistence(String nomeDocumento, Integer idUtente){
 		
 		String query = "SELECT idDocumento"
@@ -266,6 +271,7 @@ public class DocumentoDAO {
 		
 	}
 	
+	// Controlla se il documento che si vuole spostare ha un nome uguale ad un documento contenuto nella sottocartella in cui lo si vuole spostare
 	public Optional<Integer> docNameAlredyInSubfolder(Integer idDocumentoDaSpostare, Integer idSottocartellaDiDestinazione){
 		
 		String query = "SELECT idDocumento, d.nome"

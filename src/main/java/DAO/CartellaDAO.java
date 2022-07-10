@@ -25,6 +25,7 @@ public class CartellaDAO {
         
     }
     
+    // prende la lista delle cartelle di un utente
     public List<Cartella> getFolderByUser(Utente user){
     	String query = "SELECT idCartella, nome, data_creazione, idProprietario"
 	    			 + " FROM Cartella c JOIN Utente u ON (c.idProprietario = u.idUtente)"
@@ -59,6 +60,7 @@ public class CartellaDAO {
     	
 	}
     
+    // controlla se la cartella selezionata è dell'utente, se si restituisce un id
     public Optional<Integer> checkIfFolderIsOfTheUser(Integer idUtente, Integer idCartella){
     	String query = "SELECT idCartella FROM Cartella WHERE idProprietario = ? AND idCartella = ?;";
     	
@@ -85,6 +87,7 @@ public class CartellaDAO {
     	
     }
     
+    // prende i dati di una cartella tramite il suo id
     public Optional<Cartella> getById(Integer idCartella){
 		String query = "SELECT * FROM Cartella WHERE idCartella = ? ";
 		
@@ -108,6 +111,7 @@ public class CartellaDAO {
 		}
 	}
     
+    // crea una nuova cartella
     public Optional<Cartella> createNewFolder(String nomeCartella, Utente user){
     	
     	String query = "INSERT INTO Cartella(nome, data_creazione, idProprietario) VALUES(?, ?, ?);";
@@ -138,6 +142,7 @@ public class CartellaDAO {
     	
     }
     
+    // controlla che non esista un'altra cartella con lo stesso nome
     public Optional<Integer> checkFolderName(String nomeCartella){
 		String query = "SELECT idCartella FROM Cartella WHERE nome = ?;";
 		

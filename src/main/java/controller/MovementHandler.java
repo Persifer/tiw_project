@@ -46,39 +46,26 @@ public class MovementHandler extends HttpServlet {
 		
 		Utente sessionUser = UtilityConstans.getSessionUtente(request);
 		
-		Optional<Integer> tempCheckId = this.documentoDao.checkIfDocumentIsOfTheUser(idDocChange, sessionUser.getIdUtente());
+		Optional<Documento> tempCheckDoc = this.documentoDao.getDocumentByIdAndUser(idDocChange, sessionUser.getIdUtente());
 		
-		if (tempCheckId.isPresent()) {
-			
-			
-			if (idDocChange == tempCheckId.get()) {
-				// Qui il documento richiesto appartiene all'utente
-				Optional<Documento> tempDoc = this.documentoDao.getDocumentById(idDocChange);
-				sessionUser.setListaCartelle(cartellaDao.getFolderByUser(sessionUser));
+		if (tempCheckDoc.isPresent()) {
+			// se tempCheckDoc è presente, significa che l'id del documento inserito appartiene all'utente 
+			// e quindi posso svolgere operazioni su di lui senza problemi
+			sessionUser.setListaCartelle(cartellaDao.getFolderByUser(sessionUser));
 				
-				if (tempDoc.isEmpty()) {
-
-					response.sendError(404);
-				} 				
-				//qui aggiorno le cartelle ?
-				for (Cartella cartella : sessionUser.getListaCartelle()) {
-					cartella.setListaSottocartelle(sottocartellaDao.getListaSottocartelle(cartella));
-				}
-				
-				request.getSession().setAttribute("user", sessionUser);
-				request.getSession().setAttribute("idDocToMove", tempDoc.get().getIdDocumento());
-				request.getSession().setAttribute("currentSubfolder", tempDoc.get().getSottocartella().getNome());
-				request.getSession().setAttribute("isHomePage", false);
-				request.getSession().setAttribute("isMovePage", true);
-				
-				request.getRequestDispatcher(jspPath).forward(request, response);
-				
-			} else {
-				// provo a spostare un documento non dell'utente in sessione
-				System.out.println("idDocChange | provo a spostare un documento non dell'utente in sessione");
-				response.sendError(403);
+			//TODO -> qui aggiorno le cartelle ?
+			for (Cartella cartella : sessionUser.getListaCartelle()) {
+				cartella.setListaSottocartelle(sottocartellaDao.getListaSottocartelle(cartella));
 			}
 			
+			request.getSession().setAttribute("user", sessionUser);
+			request.getSession().setAttribute("idDocToMove", tempCheckDoc.get().getIdDocumento());
+			request.getSession().setAttribute("currentSubfolder", tempCheckDoc.get().getSottocartella().getNome());
+			request.getSession().setAttribute("isHomePage", false);
+			request.getSession().setAttribute("isMovePage", true);
+			
+			request.getRequestDispatcher(jspPath).forward(request, response);
+				
 		} else {
 			
 			// provo a spostare un documento non dell'utente in sessione
