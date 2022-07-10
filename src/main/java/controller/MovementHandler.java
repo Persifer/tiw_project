@@ -51,12 +51,16 @@ public class MovementHandler extends HttpServlet {
 		if (tempCheckDoc.isPresent()) {
 			// se tempCheckDoc è presente, significa che l'id del documento inserito appartiene all'utente 
 			// e quindi posso svolgere operazioni su di lui senza problemi
-			sessionUser.setListaCartelle(cartellaDao.getFolderByUser(sessionUser));
+			
+// ======================================== USELESS ===================================================================	
+			
+			/*sessionUser.setListaCartelle(cartellaDao.getFolderByUser(sessionUser));
 				
 			//TODO -> qui aggiorno le cartelle ?
 			for (Cartella cartella : sessionUser.getListaCartelle()) {
 				cartella.setListaSottocartelle(sottocartellaDao.getListaSottocartelle(cartella));
-			}
+			} */
+// ====================================================================================================================
 			
 			request.getSession().setAttribute("user", sessionUser);
 			request.getSession().setAttribute("idDocToMove", tempCheckDoc.get().getIdDocumento());

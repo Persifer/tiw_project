@@ -142,12 +142,13 @@ public class CartellaDAO {
     	
     }
     
-    // controlla che non esista un'altra cartella con lo stesso nome
-    public Optional<Integer> checkFolderName(String nomeCartella){
-		String query = "SELECT idCartella FROM Cartella WHERE nome = ?;";
+    // controlla che non esista un'altra cartella con lo stesso nome per un determinato utente
+    public Optional<Integer> checkFolderNameForUser(String nomeCartella, Integer idUtente){
+		String query = "SELECT idCartella FROM Cartella WHERE nome = ? AND idProprietario =?;";
 		
 		try(PreparedStatement statement = connection.prepareStatement(query)){
 			statement.setString(1, nomeCartella);
+			statement.setInt(2, idUtente);
 			
 			try(ResultSet result = statement.executeQuery()){
 				if(result.next()) {

@@ -51,11 +51,13 @@ public class AddFolderHandler extends HttpServlet {
 		request.getSession().setAttribute("msgNewDocument", "");
 		
 		String nomeCartella = request.getParameter("newCartella") != null ? (String) request.getParameter("newCartella") : null;
-		Optional<Integer> checkFolderNameExistence = this.cartellaDao.checkFolderName(nomeCartella);
+		// controllo che il nome della cartella non esista per quell'utente
+		Optional<Integer> checkFolderNameExistence = this.cartellaDao.checkFolderNameForUser(nomeCartella, sessionUser.getIdUtente());
 			
         
 		if (checkFolderNameExistence.isEmpty()) {
 			//Il nome della cartella non esiste
+			// creo la cartella
 			Optional<Cartella> newTempFolder = this.cartellaDao.createNewFolder(nomeCartella, sessionUser);
 			if (newTempFolder.isPresent()) {
 				request.getSession().setAttribute("msgNewFolder", "Cartella creata correttamente!");

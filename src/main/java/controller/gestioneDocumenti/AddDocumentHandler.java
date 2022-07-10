@@ -58,40 +58,38 @@ public class AddDocumentHandler extends HttpServlet {
 		String sommarioDocumento = request.getParameter("sommario") != null ? request.getParameter("sommario") : "";
 		
 		Integer idSottocartella = request.getParameter("sottocartella") != null ? Integer.decode(request.getParameter("sottocartella")) : -1;
+		// controlla che la sottocartella sia dell'utente
 		Optional<Integer> tempCheckIdSubfolder = this.sottocartellaDao.checkIfSubfolderIsOfTheUser(idSottocartella, sessionUser.getIdUtente());
 		
 		Optional<Documento> newTempFolder = null;
         
-		if (tempCheckIdSubfolder.isPresent()) {
-			// è presente un id, posso procedere
-
-			if (idSottocartella == tempCheckIdSubfolder.get()) {
-				// la sottocartella appartiene all'utente
-				Optional<Integer> checkDocumentExistence = this.documentoDao.checkDocumentNameExistence(nomeDocumento, idSottocartella);
+		if (tempCheckIdSubfolder.isPresent()) {	
+			// la sottocartella appartiene all'utente
+			
+			// controllo che non esista un documento che ha già quel nome. Necessario perhcé potrei non aver mai aperto la sottocartella
+			// durante la sessione di utilizzo e quindi potrei non avere i suoi dati salvati
+			Optional<Integer> checkDocumentExistence = this.documentoDao.checkDocumentNameExistence(nomeDocumento, idSottocartella);
+			
+			if (checkDocumentExistence.isEmpty()) {
+				// il documento non esiste, posso crearlo
+				newTempFolder = this.documentoDao.createNewDocument(nomeDocumento, sommarioDocumento, sessionUser,
+						idSottocartella);
 				
-				if (checkDocumentExistence.isEmpty()) {
-					// il documento non esiste, posso crearlo
-					newTempFolder = this.documentoDao.createNewDocument(nomeDocumento, sommarioDocumento, sessionUser,
-							idSottocartella);
-					
-					if (newTempFolder.isPresent()) {
-						request.getSession().setAttribute("msgNewDocument", "Documento creato correttamente!");
-					} else {
-						request.getSession().setAttribute("erroreNewDocument",
-								"Impossibile creare la sottocartella al momento. Riprovare pi&ugrave; tardi");
-					} 
+				if (newTempFolder.isPresent()) {
+					request.getSession().setAttribute("msgNewDocument", "Documento creato correttamente!");
 				} else {
-					// il documento esiste, non devo crearlo
 					request.getSession().setAttribute("erroreNewDocument",
-							"Il nome del documento già esiste, inserirne un'altro");
-				}
-				
-				request.getRequestDispatcher("GestioneDocumenti").forward(request, response);
-				
+							"Impossibile creare la sottocartella al momento. Riprovare pi&ugrave; tardi");
+				} 
 			} else {
-				// la sottocartella non appartiene all'utente
-				response.sendError(403);
+				// il documento esiste, non devo crearlo
+				request.getSession().setAttribute("erroreNewDocument",
+						"Il nome del documento già esiste, inserirne un'altro");
 			}
+			
+			request.getRequestDispatcher("GestioneDocumenti").forward(request, response);
+				
+
 			
 		} else {
 			// Qui si può arrivare per due motivazioni
