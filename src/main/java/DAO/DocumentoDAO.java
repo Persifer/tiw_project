@@ -103,7 +103,43 @@ public class DocumentoDAO {
 	    	}
 	    	
 			return Optional.empty();
-	    }
+	}
+	
+	public Optional<Documento> getDocumentByIdAndUser(Integer idDoc, Integer idUtente){
+    	
+    	String query = "SELECT * FROM Documento WHERE idDocumento = ? AND idUtenteProprietario = ?;";
+    		    	
+    	try(PreparedStatement statement = connection.prepareStatement(query)){
+    		
+    		statement.setInt(1,idDoc);
+    		statement.setInt(2,idUtente);
+
+    		try(ResultSet result = statement.executeQuery()){
+    		
+    			
+    			if(result.next()) {
+    				
+    				Optional<Utente> tempUser = this.userDAO.getById(result.getInt("idUtenteProprietario"));
+	    			Optional<Sottocartella> tempSubfolder = this.subfolderDAO.getById(result.getInt("idSottocartella"));
+    				
+    				return Optional.of(new Documento(
+    						result.getInt("idDocumento"),
+    						result.getString("nome"), result.getString("sommario"),
+    						result.getTimestamp("data_creazione").toLocalDateTime(),
+    						tempUser.isPresent()?tempUser.get() : null, 
+    						tempSubfolder.isPresent()?tempSubfolder.get() : null
+    						));
+    			}
+    			
+    		}
+    		
+    	}catch(SQLException error) {
+    		error.printStackTrace();
+    		return Optional.empty();
+    	}
+    	
+		return Optional.empty();
+    }
 	
 	public Optional<Documento> createNewDocument(String nomeDocumento, String sommario, Utente user, Integer idSottocartella){
     	

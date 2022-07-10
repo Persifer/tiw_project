@@ -43,35 +43,21 @@ public class DocumentHandler extends HttpServlet {
 		Utente sessionUser = UtilityConstans.getSessionUtente(request);
 		
 		Integer idDoc = request.getParameter("idDoc") != null ? Integer.decode(request.getParameter("idDoc")) : -1;		
-		Optional<Integer> tempCheckId = this.documentoDao.checkIfDocumentIsOfTheUser(idDoc, sessionUser.getIdUtente());
+		Optional<Documento> tempCheckDoc = this.documentoDao.getDocumentByIdAndUser(idDoc, sessionUser.getIdUtente());
 		
 		
-		if (tempCheckId.isPresent()) {
-						
-			if (idDoc == tempCheckId.get()) {
-				
-				Optional<Documento> tempDoc = this.documentoDao.getDocumentById(idDoc);
-				
-				if (tempDoc.isEmpty()) {
-					// errore dovuto ad una modifica dell'id da parte dell'utente che genera un errore
-					response.sendError(404); //-> old code
-				}
-				
-				Documento doc = tempDoc.get();
-				
-				if (doc.getProprietarioDocumento().getIdUtente() == sessionUser.getIdUtente()) {
-					// non ci sono errori ed il documento appartiene all'utente selezionato
-					request.getSession().setAttribute("documento", doc);
-					request.getRequestDispatcher(jspPath).forward(request, response);
-					
-				} else {
-					// errore in cui il documento prelevato non è quello scelto. Eventualità si spera impossibile
-					response.sendError(418); 
-				}
+		if (tempCheckDoc.isPresent()) {
+			// il documento appartiene all'utente, quindi posso visualizzarlo
+			Documento doc = tempCheckDoc.get();
+			
+			if (doc.getProprietarioDocumento().getIdUtente() == sessionUser.getIdUtente()) {
+				// non ci sono errori ed il documento appartiene all'utente selezionato
+				request.getSession().setAttribute("documento", doc);
+				request.getRequestDispatcher(jspPath).forward(request, response);
 				
 			} else {
-				// non posso accedere a questo documento in quanto non è dell'utente in sessione
-				response.sendError(403);
+				// errore in cui il documento prelevato non è quello scelto. Eventualità si spera impossibile
+				response.sendError(418); 
 			}
 			
 		} else {
