@@ -39,7 +39,7 @@ public class AddFolderHandler extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		Utente sessionUser = UtilityConstans.getSessionUtente(request);
+		Utente sessionUser =  UtilityConstans.getSessionUtente(request, response);
 		
 		request.getSession().setAttribute("msgNewFolder", "");
 		request.getSession().setAttribute("erroreNewFolder", "");
@@ -50,27 +50,37 @@ public class AddFolderHandler extends HttpServlet {
 		request.getSession().setAttribute("erroreNewDocument", "");
 		request.getSession().setAttribute("msgNewDocument", "");
 		
-		String nomeCartella = request.getParameter("newCartella") != null ? (String) request.getParameter("newCartella") : null;
-		// controllo che il nome della cartella non esista per quell'utente
-		Optional<Integer> checkFolderNameExistence = this.cartellaDao.checkFolderNameForUser(nomeCartella, sessionUser.getIdUtente());
-			
-        
-		if (checkFolderNameExistence.isEmpty()) {
-			//Il nome della cartella non esiste
-			// creo la cartella
-			Optional<Cartella> newTempFolder = this.cartellaDao.createNewFolder(nomeCartella, sessionUser);
-			if (newTempFolder.isPresent()) {
-				request.getSession().setAttribute("msgNewFolder", "Cartella creata correttamente!");
+		
+		String nomeCartella = ((request.getParameter("newCartella") == null) || (request.getParameter("newCartella").isEmpty()) ||
+				(request.getParameter("newCartella").isBlank())  ) ?
+				 null : (String) request.getParameter("newCartella") ;
+		
+		if (nomeCartella != null) {
+			// controllo che il nome della cartella non esista per quell'utente
+			Optional<Integer> checkFolderNameExistence = this.cartellaDao.checkFolderNameForUser(nomeCartella,
+					sessionUser.getIdUtente());
+			if (checkFolderNameExistence.isEmpty()) {
+				// Il nome della cartella non esiste
+				// creo la cartella
+				Optional<Cartella> newTempFolder = this.cartellaDao.createNewFolder(nomeCartella, sessionUser);
+				
+				if (newTempFolder.isPresent()) {
+					request.getSession().setAttribute("msgNewFolder", "Cartella creata correttamente!");
+				} else {
+					request.getSession().setAttribute("erroreNewFolder",
+							"Impossibile creare la cartella al momento. Riprovare pi&ugrave; tardi");
+				}
+				request.getRequestDispatcher("GestioneDocumenti").forward(request, response);
+
 			} else {
+				// il nome della cartella esiste
 				request.getSession().setAttribute("erroreNewFolder",
-						"Impossibile creare la cartella al momento. Riprovare pi&ugrave; tardi");
-			}
-			request.getRequestDispatcher("GestioneDocumenti").forward(request, response);
-			
+						"La cartella " + nomeCartella + " esiste gi&agrave;! Inserire un nome diverso");
+				request.getRequestDispatcher("GestioneDocumenti").forward(request, response);
+			} 
 		} else {
-			// il nome della cartella esiste
 			request.getSession().setAttribute("erroreNewFolder",
-					"La cartella " + nomeCartella + " esiste gi&agrave;! Inserire un nome diverso");
+					"Il nome della cartella non può essere vuoto!");
 			request.getRequestDispatcher("GestioneDocumenti").forward(request, response);
 		}
 	}

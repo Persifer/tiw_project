@@ -4,7 +4,6 @@ package controller;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -42,7 +41,7 @@ public class HomeServlet extends HttpServlet {
     	
     	try {
     		// codice per lista delle cartelle
-    		Utente sessionUser = UtilityConstans.getSessionUtente(request);
+    		Utente sessionUser =  UtilityConstans.getSessionUtente(request, response);
 			    		
     		sessionUser.setListaCartelle(cartellaDao.getFolderByUser(sessionUser));
     		
@@ -57,12 +56,11 @@ public class HomeServlet extends HttpServlet {
 			
     	}catch(IllegalStateException error) {
 			error.printStackTrace();
-			response.sendError(404);
+			response.sendError(HttpServletResponse.SC_CONFLICT, "Errore sconosciuto del server, riprovare più tardi");
 			
 		} catch (Exception e) {
-			
 			e.printStackTrace();
-			response.sendError(404);
+			response.sendError(HttpServletResponse.SC_CONFLICT, "Errore sconosciuto del server, riprovare più tardi");
 		}
     	
     }

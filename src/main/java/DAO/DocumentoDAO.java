@@ -74,13 +74,10 @@ public class DocumentoDAO {
 	    	String query = "SELECT * FROM Documento WHERE idDocumento = ?;";
 	    		    	
 	    	try(PreparedStatement statement = connection.prepareStatement(query)){
-	    		
 	    		statement.setInt(1,idDoc);
 	    		
-
 	    		try(ResultSet result = statement.executeQuery()){
 	    		
-	    			
 	    			if(result.next()) {
 	    				
 	    				Optional<Utente> tempUser = this.userDAO.getById(result.getInt("idUtenteProprietario"));

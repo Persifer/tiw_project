@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Optional;
 
 import javax.servlet.ServletException;
@@ -45,30 +46,48 @@ public class SottocartellaHandler extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		Utente sessionUser = UtilityConstans.getSessionUtente(request);
+		Utente sessionUser =  UtilityConstans.getSessionUtente(request, response);
 
 		request.getSession().setAttribute("erroreMovement", "");
 		
-		Integer idChosenSubFolder = request.getParameter("idSubFolder") != null ? Integer.decode(request.getParameter("idSubFolder")) : -1;
-				
-		Optional<Sottocartella> tempCheckIdSubfolder = this.sottocartellaDao.getByIdAndUtente(idChosenSubFolder, sessionUser.getIdUtente());
+		Integer idChosenSubFolder = -1;
 		
-		if (tempCheckIdSubfolder.isPresent()) {
-			
-				// la sottocartella appartiene all'utente
-								
-				Sottocartella subfolder = tempCheckIdSubfolder.get();
+		try {
+			idChosenSubFolder = ( (request.getParameter("idSubFolder") == null) || (request.getParameter("idSubFolder").isEmpty()) || 
+					(request.getParameter("idSubFolder").isBlank()) ) ?
+							-1 :Integer.parseInt(request.getParameter("idSubFolder")) ;
+		} catch(NumberFormatException error ) {
+			error.printStackTrace();
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Inserire un id di sottocartella valido");
+			return;
+		}
+		
+		
 				
+		if (idChosenSubFolder > 0) {
+			
+			Optional<Sottocartella> tempCheckIdSubfolder = this.sottocartellaDao.getByIdAndUtente(idChosenSubFolder,
+					sessionUser.getIdUtente());
+			if (tempCheckIdSubfolder.isPresent()) {
+
+				// la sottocartella appartiene all'utente
+
+				Sottocartella subfolder = tempCheckIdSubfolder.get();
+
 				// La sottocartella esiste veramente e quindi posso procedere nella sua visualizzazione
 				subfolder.setListaDocumenti(
 						this.documentoDao.getListaDocumentiByUserAndSubfolder(subfolder, sessionUser.getIdUtente()));
-				
+
 				request.getSession().setAttribute("sottocartella", subfolder);
 				request.getRequestDispatcher(jspPath).forward(request, response);
-				
+
+			} else {
+				// sto provando ad avere accesso a qualcosa che non è dell'utente in sessione 
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Non puoi avere accesso a questo elemento!");
+			} 
 		} else {
-			// sto provando ad avere accesso a qualcosa che non è dell'utente in sessione 
-			response.sendError(403);
+			//sottocartella con id negativo
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Inserire un id di sottocartella valido");
 		}
 		
 		

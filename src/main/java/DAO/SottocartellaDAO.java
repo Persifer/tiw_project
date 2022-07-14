@@ -192,7 +192,6 @@ public class SottocartellaDAO {
 			statement.setString(1, nomeSottocartella);
 			statement.setInt(2, idCartella);
 			
-			System.out.println(statement);
 			
 			try(ResultSet result = statement.executeQuery()){
 				if(result.next()) {

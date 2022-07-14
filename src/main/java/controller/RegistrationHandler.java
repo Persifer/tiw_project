@@ -57,8 +57,13 @@ public class RegistrationHandler extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		String username = request.getParameter("username") != null ? (String) request.getParameter("username") : null;
-		String pwd = request.getParameter("pwd") != null ? (String) request.getParameter("pwd") : null;
+		String username = ( (request.getParameter("username") == null) || (request.getParameter("username").isEmpty()) || 
+				(request.getParameter("username").isBlank()) ) 
+        			? null : (String)request.getParameter("username");
+        
+        String pwd = ( (request.getParameter("pwd") == null) || (request.getParameter("pwd").isEmpty()) || 
+				(request.getParameter("pwd").isBlank()) ) 
+        			? null : (String)request.getParameter("pwd");
 		
 		String error = "";
 		String path = "";
@@ -86,7 +91,6 @@ public class RegistrationHandler extends HttpServlet {
 			if (tempUser.isPresent()) {
 				error += "Username già selezionato, inserirne un'altro!\n";
 			}else {
-				System.out.println("Sto per creare l'utente");
 				tempUser = userDao.createNewUser(username, pwd);
 				if(tempUser.isEmpty()) {
 					error += "Siamo spiacenti, al momento siamo impossibilitati a creare un nuovo utente. Riprovi pi&ugrave; tardi\n";

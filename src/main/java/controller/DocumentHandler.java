@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import DAO.DocumentoDAO;
 import constans.UtilityConstans;
 import model.Documento;
-import model.Sottocartella;
 import model.Utente;
 import utils.ConnectionHandler;
 
@@ -40,31 +39,43 @@ public class DocumentHandler extends HttpServlet {
 
    
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Utente sessionUser = UtilityConstans.getSessionUtente(request);
+		Utente sessionUser =  UtilityConstans.getSessionUtente(request, response);
+				
+		Integer idDoc = -1;
 		
-		Integer idDoc = request.getParameter("idDoc") != null ? Integer.decode(request.getParameter("idDoc")) : -1;		
-		Optional<Documento> tempCheckDoc = this.documentoDao.getDocumentByIdAndUser(idDoc, sessionUser.getIdUtente());
-		
-		
-		if (tempCheckDoc.isPresent()) {
-			// il documento appartiene all'utente, quindi posso visualizzarlo
-			Documento doc = tempCheckDoc.get();
+		try {
+			// controllo che effettivamente sia un numero oppure no
+			idDoc = ( (request.getParameter("idDoc") == null) || (request.getParameter("idDoc").isEmpty()) || 
+					(request.getParameter("idDoc").isBlank()) ) ?
+							-1 :Integer.parseInt(request.getParameter("idDoc"));
 			
-			if (doc.getProprietarioDocumento().getIdUtente() == sessionUser.getIdUtente()) {
+		} catch(NumberFormatException error ) {
+			error.printStackTrace();
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Inserire un id di un documento valido");
+			return;
+		}
+		
+		if (idDoc > 0) {
+			
+			Optional<Documento> tempCheckDoc = this.documentoDao.getDocumentByIdAndUser(idDoc,
+					sessionUser.getIdUtente());
+			
+			if (tempCheckDoc.isPresent()) {
+				// il documento appartiene all'utente, quindi posso visualizzarlo
+				Documento doc = tempCheckDoc.get();
+
 				// non ci sono errori ed il documento appartiene all'utente selezionato
 				request.getSession().setAttribute("documento", doc);
 				request.getRequestDispatcher(jspPath).forward(request, response);
-				
+
 			} else {
-				// errore in cui il documento prelevato non è quello scelto. Eventualità si spera impossibile
-				response.sendError(418); 
-			}
-			
+
+				// Sto provando ad accedere a qualcosa non dell'utente in sessione
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Non puoi avere accesso a questo elemento!");
+
+			} 
 		} else {
-			
-			// Sto provando ad accedere a qualcosa non dell'utente in sessione
-			response.sendError(403); 
-			
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Inserire un id di un documento valido");
 		}
 		
 	}

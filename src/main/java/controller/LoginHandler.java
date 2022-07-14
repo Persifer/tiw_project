@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,8 +40,14 @@ public class LoginHandler extends HttpServlet {
     	request.getSession().setAttribute("errore","");
     	request.getSession().setAttribute("msg","");
 
-        String username = request.getParameter("username") != null ? request.getParameter("username") : null;
-        String pwd = request.getParameter("pwd") != null ? request.getParameter("pwd") : null;
+        String username = ( (request.getParameter("username") == null) || (request.getParameter("username").isEmpty()) || 
+				(request.getParameter("username").isBlank()) ) 
+        			? null : (String)request.getParameter("username");
+        
+        String pwd = ( (request.getParameter("pwd") == null) || (request.getParameter("pwd").isEmpty()) || 
+				(request.getParameter("pwd").isBlank()) ) 
+        			? null : (String)request.getParameter("pwd");
+        
 
         String error = "";
 

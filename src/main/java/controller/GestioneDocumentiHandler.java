@@ -3,7 +3,6 @@ package controller;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,11 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import DAO.CartellaDAO;
-import DAO.DocumentoDAO;
 import DAO.SottocartellaDAO;
 import constans.UtilityConstans;
 import model.Cartella;
-import model.Sottocartella;
 import model.Utente;
 import utils.ConnectionHandler;
 
@@ -30,7 +27,6 @@ public class GestioneDocumentiHandler extends HttpServlet {
 	
 	private CartellaDAO cartellaDao;
 	private SottocartellaDAO sottocartellaDao;
-	private DocumentoDAO documentoDao;
        
 
     public GestioneDocumentiHandler() {
@@ -41,14 +37,12 @@ public class GestioneDocumentiHandler extends HttpServlet {
         connection = ConnectionHandler.getConnection(getServletContext());
         this.sottocartellaDao = new SottocartellaDAO(connection);
         this.cartellaDao = new CartellaDAO(connection);
-        this.documentoDao = new DocumentoDAO(connection);
     }
 
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-				
-		Utente sessionUser = UtilityConstans.getSessionUtente(request);
+		Utente sessionUser =  UtilityConstans.getSessionUtente(request, response);
 		// aggiorno la lista delle cartelle di un utente
 		sessionUser.setListaCartelle(this.cartellaDao.getFolderByUser(sessionUser));
 				
